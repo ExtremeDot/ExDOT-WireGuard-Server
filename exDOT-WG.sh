@@ -1364,7 +1364,16 @@ uninstallWg
 ;;
 
 99) #update
-#updateSC
+mkdir -p /tmp/extdotmenu1
+cd /tmp/extdotmenu1
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+wget  https://raw.githubusercontent.com/ExtremeDot/ExDOT-WireGuard-Server/main/exDOT-WG.sh
+chmod +x /tmp/extdotmenu1/exDOT-WG.sh
+mv /tmp/extdotmenu1/exDOT-WG.sh /usr/local/bin/exDOT-WG
+chmod +x /usr/local/bin/exDOT-WG
+bash /usr/local/bin/exDOT-WG ; exit
+
 ;;
 
 esac
