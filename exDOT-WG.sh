@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.0
+scriptVersion=1.1
 
 # Color Codes
 function colorCodes() {
@@ -216,7 +216,7 @@ rm -f /etc/sysctl.d/wg.conf
 sysctl --system
 
 # Remove Crontab command if exssits
-CRTLINE="/usr/local/extDot/${SERVER_WG_NIC}_wgExpCtrl.sh"
+CRTLINE="/usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh"
 CRONTAB=$(crontab -l)
 if [[ $CRONTAB == *"$CRTLINE"* ]]; then
 NEW_CRONTAB=$(echo "$CRONTAB" | grep -v "$CRTLINE")
@@ -622,7 +622,7 @@ PostUp = iptables -I FORWARD -i ${SERVER_WG_NIC} -j ACCEPT
 PostUp = iptables -t nat -A POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE
 PostUp = ip6tables -I FORWARD -i ${SERVER_WG_NIC} -j ACCEPT
 PostUp = ip6tables -t nat -A POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE
-PostUp = /usr/local/extDot/wgExpCtrl_${SERVER_WG_NIC}.sh
+PostUp = /usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh
 PostDown = iptables -D INPUT -p udp --dport ${SERVER_PORT} -j ACCEPT
 PostDown = iptables -D FORWARD -i ${SERVER_PUB_NIC} -o ${SERVER_WG_NIC} -j ACCEPT
 PostDown = iptables -D FORWARD -i ${SERVER_WG_NIC} -j ACCEPT
@@ -647,11 +647,11 @@ sysctl --system
 ### make bash scrip 
 mkdir -p /usr/local/extDot/
 sleep 1
-touch /usr/local/extDot/wgExpCtrl_${SERVER_WG_NIC}.sh
-chmod 777 /usr/local/extDot/wgExpCtrl_${SERVER_WG_NIC}.sh
+touch /usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh
+chmod 777 /usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh
 sleep 1
 
-cat <<EOF > /usr/local/extDot/wgExpCtrl_${SERVER_WG_NIC}.sh
+cat <<EOF > /usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh
 #!/bin/bash
 
 check_client_expiration() {
@@ -729,7 +729,7 @@ done
 
 EOF
 
-chmod +x /usr/local/extDot/wgExpCtrl_${SERVER_WG_NIC}.sh
+chmod +x /usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh
 
 ########
 
@@ -755,15 +755,15 @@ systemctl enable "wg-quick@${SERVER_WG_NIC}"
 ####
 
 # add a cronjob to refresh every 1 hour user expiration
-CRTLINE="/usr/local/extDot/${SERVER_WG_NIC}_wgExpCtrl.sh"
+CRTLINE="/usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh"
 CRONTAB=$(crontab -l)
 
 if [[ $CRONTAB == *"$CRTLINE"* ]]; then
 	echo "Crontab has Updated Before."
 else
 	echo "The specified line does not exist in the crontab."
-	chmod +x /usr/local/extDot/${SERVER_WG_NIC}_wgExpCtrl.sh
-	crontab -l | { cat; echo "45 * * * * /usr/local/extDot/${SERVER_WG_NIC}_wgExpCtrl.sh" ; } | crontab -
+	chmod +x /usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh
+	crontab -l | { cat; echo "45 * * * * /usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh" ; } | crontab -
 fi
 
 clear
@@ -1201,7 +1201,7 @@ if [[ "$response" == "DEL" || "$response" == "del" || "$response" == "D" || "$re
 	rm -f "/etc/wireguard/${SERVER_WG_NIC}.conf"
 	rm -f "/etc/wireguard/${SERVER_WG_NIC}_params"
 	rm -f "/usr/local/extDot/confHash_${SERVER_WG_NIC}.log"
-	rm -f "/usr/local/extDot/${SERVER_WG_NIC}_wgExpCtrl.sh"
+	rm -f "/usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh"
 	red " - Delete Client File?"	
 	read -p " - Remove ${SERVER_WG_NIC} client files? [y/n]: " response
 	if [[ "$response" == "Y" || "$response" == "y" || "$response" == "yes" ]]; then
@@ -1340,12 +1340,12 @@ B2main
 ;;
 
 21) # Permission Fix for Script 
-sudo chmod +x /usr/local/extDot/${SERVER_WG_NIC}_wgExpCtrl.sh
+sudo chmod +x /usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh
 B2main
 ;;
 
 22) # Syncing Configs to Apply Users 
-sudo bash /usr/local/extDot/${SERVER_WG_NIC}_wgExpCtrl.sh
+sudo bash /usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh
 B2main
 ;;
 
