@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.24test
+scriptVersion=1.25test
 
 # Color Codes
 function colorCodes() {
@@ -607,12 +607,12 @@ SERVER_PUB_KEY=$(echo "${SERVER_PRIV_KEY}" | wg pubkey)
 echo "SERVER_PUB_IP=${SERVER_PUB_IP}
 SERVER_PUB_NIC=${SERVER_PUB_NIC}
 SERVER_WG_NIC=${SERVER_WG_NIC}
-SERVER_WG_IPV4=${SERVER_WG_IPV4}" >/etc/wireguard/${SERVER_WG_NIC}_params
+SERVER_WG_IPV4=${SERVER_WG_IPV4}" > "/etc/wireguard/${SERVER_WG_NIC}_param"
 
 if [ "$useIPv6" = "true" ]; then
-  echo "SERVER_WG_IPV6=${SERVER_WG_IPV6}" >>/etc/wireguard/${SERVER_WG_NIC}_param
+  echo "SERVER_WG_IPV6=${SERVER_WG_IPV6}" >> "/etc/wireguard/${SERVER_WG_NIC}_param"
 else
-  echo "SERVER_WG_IPV6=" >>/etc/wireguard/${SERVER_WG_NIC}_param
+  echo "SERVER_WG_IPV6=" >> "/etc/wireguard/${SERVER_WG_NIC}_param"
 fi
 
 
@@ -623,15 +623,15 @@ CLIENT_DNS_1=${CLIENT_DNS_1}
 CLIENT_DNS_2=${CLIENT_DNS_2}
 CLIENT_DNS6_1=${CLIENT_DNS6_1}
 CLIENT_DNS6_2=${CLIENT_DNS6_2}
-ALLOWED_IPS=${ALLOWED_IPS}" >>/etc/wireguard/${SERVER_WG_NIC}_params
+ALLOWED_IPS=${ALLOWED_IPS}" >>"/etc/wireguard/${SERVER_WG_NIC}_param"
 
 # Add server interface
 echo "[Interface]" >"/etc/wireguard/${SERVER_WG_NIC}.conf"
 
 if [ "$useIPv6" = "true" ]; then
-  echo " Address = ${SERVER_WG_IPV4}/24,${SERVER_WG_IPV6}/128" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+  echo "Address = ${SERVER_WG_IPV4}/24,${SERVER_WG_IPV6}/128" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
 else
-  echo " Address = ${SERVER_WG_IPV4}/24" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+  echo "Address = ${SERVER_WG_IPV4}/24" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
 fi
 
 echo "ListenPort = ${SERVER_PORT}
@@ -975,17 +975,25 @@ until [[ ${IPV4_EXISTS} == '0' ]]; do
 	fi
 done
 
-BASE_IP=$(echo "$SERVER_WG_IPV6" | awk -F '::' '{ print $1 }')
-until [[ ${IPV6_EXISTS} == '0' ]]; do
-	read -rp "   - Client WireGuard IPv6: ${BASE_IP}::" -e -i "${DOT_IP}" DOT_IP
-	CLIENT_WG_IPV6="${BASE_IP}::${DOT_IP}"
-	IPV6_EXISTS=$(grep -c "${CLIENT_WG_IPV6}/128" "/etc/wireguard/${SERVER_WG_NIC}.conf")
-	if [[ ${IPV6_EXISTS} != 0 ]]; then
-		echo ""
-		echo -e "${ORANGE}   - A client with the specified IPv6 was already created, please choose another IPv6.${NC}"
-		echo ""
-	fi
-done
+## IPV6
+
+SERVER_WG_IPV6=$(sed -n 's/^SERVER_WG_IPV6=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_param)
+
+if [ -z "$SERVER_WG_IPV6" ]; then
+	echo "Disabled IP v6, skipping.."
+else
+
+	BASE_IP=$(echo "$SERVER_WG_IPV6" | awk -F '::' '{ print $1 }')
+	until [[ ${IPV6_EXISTS} == '0' ]]; do
+		read -rp "   - Client WireGuard IPv6: ${BASE_IP}::" -e -i "${DOT_IP}" DOT_IP
+		CLIENT_WG_IPV6="${BASE_IP}::${DOT_IP}"
+		IPV6_EXISTS=$(grep -c "${CLIENT_WG_IPV6}/128" "/etc/wireguard/${SERVER_WG_NIC}.conf")
+		if [[ ${IPV6_EXISTS} != 0 ]]; then
+			echo ""
+			echo -e "${ORANGE}   - A client with the specified IPv6 was already created, please choose another IPv6.${NC}"
+			echo ""
+		fi
+	done
 
 # MTU Size
 mtuSet
