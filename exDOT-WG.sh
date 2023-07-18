@@ -1,7 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.265test
-
+scriptVersion=1.267
 # Color Codes
 function colorCodes() {
 RED='\033[0;31m'
