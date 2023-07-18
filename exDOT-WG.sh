@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.1
+scriptVersion=1.2
 
 # Color Codes
 function colorCodes() {
@@ -360,7 +360,7 @@ echo
 function mtuSet() {
 MIN_MTU=576
 MAX_MTU=1500
-DEFAULT_MTU=1420
+DEFAULT_MTU=1280
 echo
 yellow "   - Setup MTU size parameter"
 while true; do
