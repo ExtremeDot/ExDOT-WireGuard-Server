@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.21
+scriptVersion=1.22
 
 # Color Codes
 function colorCodes() {
@@ -8,6 +8,7 @@ RED='\033[0;31m'
 ORANGE='\033[0;33m'
 GREEN='\033[0;32m'
 NC='\033[0m'
+useIPv6=false
 
 red(){
     echo -e "\033[31m\033[01m$1\033[0m"
@@ -502,23 +503,36 @@ while [ "$server_ip_available" = false ]; do
 		read -rp " - IPv4 Network Gateway: " -e -i "10.66.$((RANDOM % 253 + 2)).1" SERVER_WG_IPV4
 	done
 
-    # Generate random default IPv6 address #456 
-	#https://github.com/angristan/wireguard-install/pull/456/commits/7674f367047268a4af28a4e33c536f1a6f0133c2
-	DEFAULT_IPV6=$(echo "`date +%s%N``cat /etc/machine-id`" | sha256sum | cut -c 55-65 | sed 's/../&\n/g' | xargs printf "fd%s:%s%s:%s%s::1")
-	SERVER_WG_IPV6=""
-    until [[ ${SERVER_WG_IPV6} =~ ^([a-f0-9]{1,4}:){3,4}: ]]; do
-        #read -rp "Server WireGuard IPv6: " -e -i fd42:42:42::1 SERVER_WG_IPV6
-		read -rp " - IPv6 Network Gateway: " -e -i "${DEFAULT_IPV6}" SERVER_WG_IPV6
-    done
 
     # Call the function to check if the server IP addresses are available
     error_message=""
     if ! check_server_ip_available "$SERVER_WG_IPV4" "IPv4"; then
         error_message+="IPv4"
     fi
-    if ! check_server_ip_available "$SERVER_WG_IPV6" "IPv6"; then
-        error_message+="IPv6"
-    fi
+
+    # IPV6 ASK
+    read -p "Do you want to use IPv6? [y/n]" use_ipv6
+	if [[ $use_ipv6 =~ ^[Yy]$ ]]; then
+		# User wants to use IPv6
+		useIPv6=true
+		echo "Enabling IPv6..."
+		# Generate random default IPv6 address #456 
+		#https://github.com/angristan/wireguard-install/pull/456/commits/7674f367047268a4af28a4e33c536f1a6f0133c2
+		DEFAULT_IPV6=$(echo "`date +%s%N``cat /etc/machine-id`" | sha256sum | cut -c 55-65 | sed 's/../&\n/g' | xargs printf "fd%s:%s%s:%s%s::1")
+		SERVER_WG_IPV6=""
+		until [[ ${SERVER_WG_IPV6} =~ ^([a-f0-9]{1,4}:){3,4}: ]]; do
+			read -rp " - IPv6 Network Gateway: " -e -i "${DEFAULT_IPV6}" SERVER_WG_IPV6
+		done
+
+  		if ! check_server_ip_available "$SERVER_WG_IPV6" "IPv6"; then
+			error_message+="IPv6"
+		fi
+
+	else
+	    # User does not want to use IPv6
+	    useIPv6=false
+	    echo "Skipping IPv6..."
+	fi
 
     if [ -z "$error_message" ]; then
         green "   - The server IP addresses $SERVER_WG_IPV4 and $SERVER_WG_IPV6 are set."
