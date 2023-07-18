@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.23test
+scriptVersion=1.24test
 
 # Color Codes
 function colorCodes() {
@@ -607,23 +607,23 @@ SERVER_PUB_KEY=$(echo "${SERVER_PRIV_KEY}" | wg pubkey)
 echo "SERVER_PUB_IP=${SERVER_PUB_IP}
 SERVER_PUB_NIC=${SERVER_PUB_NIC}
 SERVER_WG_NIC=${SERVER_WG_NIC}
-SERVER_WG_IPV4=${SERVER_WG_IPV4}
+SERVER_WG_IPV4=${SERVER_WG_IPV4}" >/etc/wireguard/${SERVER_WG_NIC}_params
 
 if [ "$useIPv6" = "true" ]; then
-  SERVER_WG_IPV6=${SERVER_WG_IPV6}
+  echo "SERVER_WG_IPV6=${SERVER_WG_IPV6}" >>/etc/wireguard/${SERVER_WG_NIC}_param
 else
-  SERVER_WG_IPV6=""
+  echo "SERVER_WG_IPV6=" >>/etc/wireguard/${SERVER_WG_NIC}_param
 fi
 
 
-SERVER_PORT=${SERVER_PORT}
+echo "SERVER_PORT=${SERVER_PORT}
 SERVER_PRIV_KEY=${SERVER_PRIV_KEY}
 SERVER_PUB_KEY=${SERVER_PUB_KEY}
 CLIENT_DNS_1=${CLIENT_DNS_1}
 CLIENT_DNS_2=${CLIENT_DNS_2}
 CLIENT_DNS6_1=${CLIENT_DNS6_1}
 CLIENT_DNS6_2=${CLIENT_DNS6_2}
-ALLOWED_IPS=${ALLOWED_IPS}" >/etc/wireguard/${SERVER_WG_NIC}_params
+ALLOWED_IPS=${ALLOWED_IPS}" >>/etc/wireguard/${SERVER_WG_NIC}_params
 
 # Add server interface
 echo "[Interface]" >"/etc/wireguard/${SERVER_WG_NIC}.conf"
@@ -635,7 +635,7 @@ else
 fi
 
 echo "ListenPort = ${SERVER_PORT}
-PrivateKey = ${SERVER_PRIV_KEY}" >"/etc/wireguard/${SERVER_WG_NIC}.conf"
+PrivateKey = ${SERVER_PRIV_KEY}" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
 
 
 if pgrep firewalld; then
