@@ -1,9 +1,6 @@
 #!/bin/bash
-## TEST CONDITIONS
 
-## NEED TO ADD BANDWITH USAGE CONTROL
-
-scriptVersion=1.27
+scriptVersion=1.7_test
 # Color Codes
 function colorCodes() {
 RED='\033[0;31m'
