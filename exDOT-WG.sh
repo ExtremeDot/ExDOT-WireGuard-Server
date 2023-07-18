@@ -1,4 +1,7 @@
 #!/bin/bash
+## TEST CONDITIONS
+
+## NEED TO ADD BANDWITH USAGE CONTROL
 
 scriptVersion=1.27
 # Color Codes
