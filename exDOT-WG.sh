@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.263test
+scriptVersion=1.265test
 
 # Color Codes
 function colorCodes() {
@@ -361,7 +361,7 @@ echo
 function mtuSet() {
 MIN_MTU=576
 MAX_MTU=1500
-DEFAULT_MTU=0
+DEFAULT_MTU=1280
 echo
 yellow "   - Setup MTU size parameter"
 while true; do
@@ -1019,8 +1019,20 @@ else
 	echo "Address = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128" >> "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
 fi
 
-echo "DNS = ${CLIENT_DNS_1},${CLIENT_DNS_2},${CLIENT_DNS6_1},${CLIENT_DNS6_2}
-MTU = ${mtu}
+
+CLIENT_DNS_1=$(sed -n 's/^CLIENT_DNS_1=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
+CLIENT_DNS_2=$(sed -n 's/^CLIENT_DNS_2=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
+CLIENT_DNS6_1=$(sed -n 's/^CLIENT_DNS6_1=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
+CLIENT_DNS6_2=$(sed -n 's/^CLIENT_DNS6_2=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
+SERVER_PUB_KEY=$(sed -n 's/^SERVER_PUB_KEY=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
+SERVER_PUB_IP=$(sed -n 's/^SERVER_PUB_IP=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
+SERVER_PORT=$(sed -n 's/^SERVER_PORT=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
+ENDPOINT="${SERVER_PUB_IP}:${SERVER_PORT}"
+
+#DNS WRITE
+echo "DNS = ${CLIENT_DNS_1},${CLIENT_DNS_2},${CLIENT_DNS6_1},${CLIENT_DNS6_2}" >>"${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
+
+echo "MTU = ${mtu}
 
 [Peer]
 PublicKey = ${SERVER_PUB_KEY}
