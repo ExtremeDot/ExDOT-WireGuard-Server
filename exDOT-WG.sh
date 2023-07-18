@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.25test
+scriptVersion=1.251test
 
 # Color Codes
 function colorCodes() {
@@ -607,12 +607,12 @@ SERVER_PUB_KEY=$(echo "${SERVER_PRIV_KEY}" | wg pubkey)
 echo "SERVER_PUB_IP=${SERVER_PUB_IP}
 SERVER_PUB_NIC=${SERVER_PUB_NIC}
 SERVER_WG_NIC=${SERVER_WG_NIC}
-SERVER_WG_IPV4=${SERVER_WG_IPV4}" > "/etc/wireguard/${SERVER_WG_NIC}_param"
+SERVER_WG_IPV4=${SERVER_WG_IPV4}" > "/etc/wireguard/${SERVER_WG_NIC}_params"
 
 if [ "$useIPv6" = "true" ]; then
-  echo "SERVER_WG_IPV6=${SERVER_WG_IPV6}" >> "/etc/wireguard/${SERVER_WG_NIC}_param"
+  echo "SERVER_WG_IPV6=${SERVER_WG_IPV6}" >> "/etc/wireguard/${SERVER_WG_NIC}_params"
 else
-  echo "SERVER_WG_IPV6=" >> "/etc/wireguard/${SERVER_WG_NIC}_param"
+  echo "SERVER_WG_IPV6=" >> "/etc/wireguard/${SERVER_WG_NIC}_params"
 fi
 
 
@@ -623,7 +623,7 @@ CLIENT_DNS_1=${CLIENT_DNS_1}
 CLIENT_DNS_2=${CLIENT_DNS_2}
 CLIENT_DNS6_1=${CLIENT_DNS6_1}
 CLIENT_DNS6_2=${CLIENT_DNS6_2}
-ALLOWED_IPS=${ALLOWED_IPS}" >>"/etc/wireguard/${SERVER_WG_NIC}_param"
+ALLOWED_IPS=${ALLOWED_IPS}" >>"/etc/wireguard/${SERVER_WG_NIC}_params"
 
 # Add server interface
 echo "[Interface]" >"/etc/wireguard/${SERVER_WG_NIC}.conf"
@@ -977,7 +977,7 @@ done
 
 ## IPV6
 
-SERVER_WG_IPV6=$(sed -n 's/^SERVER_WG_IPV6=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_param)
+SERVER_WG_IPV6=$(sed -n 's/^SERVER_WG_IPV6=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
 
 if [ -z "$SERVER_WG_IPV6" ]; then
 	echo "Disabled IP v6, skipping.."
@@ -994,6 +994,7 @@ else
 			echo ""
 		fi
 	done
+fi
 
 # MTU Size
 mtuSet
