@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.251test
+scriptVersion=1.26test
 
 # Color Codes
 function colorCodes() {
@@ -980,7 +980,7 @@ done
 SERVER_WG_IPV6=$(sed -n 's/^SERVER_WG_IPV6=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
 
 if [ -z "$SERVER_WG_IPV6" ]; then
-	echo "Disabled IP v6, skipping.."
+	echo "   - Disabled IP v6, skipping.."
 else
 
 	BASE_IP=$(echo "$SERVER_WG_IPV6" | awk -F '::' '{ print $1 }')
@@ -1283,7 +1283,7 @@ echo "1) View Available Interfaces                         2) Select Interface"
 echo "3) Create New Interface                              4) Delete Selected Interface"
 echo "5) Enable Service                                    6) Disable Service"
 echo "7) Start Service                                     8) Stop Service"
-echo "9) Edit All Server's Config files"
+echo "9) Edit All Server's Config files                    10) Restart Current WireGuard Server"
 echo
 blue "--- Client Modification ------------------------------------------------------------------"
 echo "11) Add New Client                                   12) Show all users informations"
@@ -1356,6 +1356,12 @@ nano /etc/wireguard/${SERVER_WG_NIC}.conf
 nano /etc/wireguard/${SERVER_WG_NIC}_params
 B2main
 ;;
+
+10) # Restrat server
+systemctl restart wg-quick@${SERVER_WG_NIC}.service
+B2main
+;;
+
 
 11) # Add New Client 
 newClient
