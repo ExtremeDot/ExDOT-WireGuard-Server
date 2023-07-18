@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.26test
+scriptVersion=1.262test
 
 # Color Codes
 function colorCodes() {
@@ -361,7 +361,7 @@ echo
 function mtuSet() {
 MIN_MTU=576
 MAX_MTU=1500
-DEFAULT_MTU=1280
+DEFAULT_MTU=0
 echo
 yellow "   - Setup MTU size parameter"
 while true; do
@@ -1009,23 +1009,37 @@ mkdir -p $HOME_DIR
 
 # Create client file and add the server as a peer
 echo "[Interface]
-PrivateKey = ${CLIENT_PRIV_KEY}
-Address = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128
-DNS = ${CLIENT_DNS_1},${CLIENT_DNS_2},${CLIENT_DNS6_1},${CLIENT_DNS6_2}
+PrivateKey = ${CLIENT_PRIV_KEY} > "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
+
+
+if [ -z "$SERVER_WG_IPV6" ]; then
+	echo "   - Disabled IP v6, skipping.."
+ 	echo "Address = ${CLIENT_WG_IPV4}/32" >> "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
+else
+	echo "Address = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128" >> "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
+fi
+
+echo "DNS = ${CLIENT_DNS_1},${CLIENT_DNS_2},${CLIENT_DNS6_1},${CLIENT_DNS6_2}
 MTU = ${mtu}
 
 [Peer]
 PublicKey = ${SERVER_PUB_KEY}
 PresharedKey = ${CLIENT_PRE_SHARED_KEY}
 Endpoint = ${ENDPOINT}
-AllowedIPs = ${ALLOWED_IPS}" >"${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
+AllowedIPs = ${ALLOWED_IPS}" >>"${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
 
 # Add the client as a peer to the server
 echo -e "\n### Client ${CLIENT_NAME}
 [Peer]
 PublicKey = ${CLIENT_PUB_KEY}
-PresharedKey = ${CLIENT_PRE_SHARED_KEY}
-AllowedIPs = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+PresharedKey = ${CLIENT_PRE_SHARED_KEY}" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+
+if [ -z "$SERVER_WG_IPV6" ]; then
+ 	echo "AllowedIPs = ${CLIENT_WG_IPV4}/32" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+else
+	echo "AllowedIPs = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+fi
+
 
 wg syncconf "${SERVER_WG_NIC}" <(wg-quick strip "${SERVER_WG_NIC}")
 
