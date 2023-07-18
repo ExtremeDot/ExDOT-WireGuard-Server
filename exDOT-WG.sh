@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.262test
+scriptVersion=1.263test
 
 # Color Codes
 function colorCodes() {
@@ -1009,7 +1009,7 @@ mkdir -p $HOME_DIR
 
 # Create client file and add the server as a peer
 echo "[Interface]
-PrivateKey = ${CLIENT_PRIV_KEY} > "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
+PrivateKey = ${CLIENT_PRIV_KEY}"> "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
 
 
 if [ -z "$SERVER_WG_IPV6" ]; then
@@ -1032,7 +1032,7 @@ AllowedIPs = ${ALLOWED_IPS}" >>"${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf
 echo -e "\n### Client ${CLIENT_NAME}
 [Peer]
 PublicKey = ${CLIENT_PUB_KEY}
-PresharedKey = ${CLIENT_PRE_SHARED_KEY}" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+PresharedKey = ${CLIENT_PRE_SHARED_KEY}" >> "/etc/wireguard/${SERVER_WG_NIC}.conf"
 
 if [ -z "$SERVER_WG_IPV6" ]; then
  	echo "AllowedIPs = ${CLIENT_WG_IPV4}/32" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
