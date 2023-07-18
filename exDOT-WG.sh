@@ -1027,6 +1027,7 @@ CLIENT_DNS6_2=$(sed -n 's/^CLIENT_DNS6_2=\(.*\)$/\1/p' /etc/wireguard/${SERVER_W
 SERVER_PUB_KEY=$(sed -n 's/^SERVER_PUB_KEY=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
 SERVER_PUB_IP=$(sed -n 's/^SERVER_PUB_IP=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
 SERVER_PORT=$(sed -n 's/^SERVER_PORT=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
+ALLOWED_IPS=$(sed -n 's/^ALLOWED_IPS=\(.*\)$/\1/p' /etc/wireguard/${SERVER_WG_NIC}_params)
 ENDPOINT="${SERVER_PUB_IP}:${SERVER_PORT}"
 
 #DNS WRITE
@@ -1045,6 +1046,7 @@ echo -e "\n### Client ${CLIENT_NAME}
 [Peer]
 PublicKey = ${CLIENT_PUB_KEY}
 PresharedKey = ${CLIENT_PRE_SHARED_KEY}" >> "/etc/wireguard/${SERVER_WG_NIC}.conf"
+
 
 if [ -z "$SERVER_WG_IPV6" ]; then
  	echo "AllowedIPs = ${CLIENT_WG_IPV4}/32" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
