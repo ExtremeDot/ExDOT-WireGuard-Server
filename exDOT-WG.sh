@@ -360,7 +360,7 @@ echo
 function mtuSet() {
 MIN_MTU=576
 MAX_MTU=1500
-DEFAULT_MTU=1280
+DEFAULT_MTU=1390
 echo
 yellow "   - Setup MTU size parameter"
 while true; do
