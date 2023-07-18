@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.22
+scriptVersion=1.23test
 
 # Color Codes
 function colorCodes() {
@@ -511,11 +511,12 @@ while [ "$server_ip_available" = false ]; do
     fi
 
     # IPV6 ASK
-    read -p "Do you want to use IPv6? [y/n]" use_ipv6
+    echo""
+    read -p " - Do you want to use IPv6? [y/n]" use_ipv6
 	if [[ $use_ipv6 =~ ^[Yy]$ ]]; then
 		# User wants to use IPv6
 		useIPv6=true
-		echo "Enabling IPv6..."
+		echo " - Enabling IPv6..."
 		# Generate random default IPv6 address #456 
 		#https://github.com/angristan/wireguard-install/pull/456/commits/7674f367047268a4af28a4e33c536f1a6f0133c2
 		DEFAULT_IPV6=$(echo "`date +%s%N``cat /etc/machine-id`" | sha256sum | cut -c 55-65 | sed 's/../&\n/g' | xargs printf "fd%s:%s%s:%s%s::1")
@@ -531,7 +532,7 @@ while [ "$server_ip_available" = false ]; do
 	else
 	    # User does not want to use IPv6
 	    useIPv6=false
-	    echo "Skipping IPv6..."
+	    echo " - Skipping IPv6..."
 	fi
 
     if [ -z "$error_message" ]; then
@@ -607,7 +608,14 @@ echo "SERVER_PUB_IP=${SERVER_PUB_IP}
 SERVER_PUB_NIC=${SERVER_PUB_NIC}
 SERVER_WG_NIC=${SERVER_WG_NIC}
 SERVER_WG_IPV4=${SERVER_WG_IPV4}
-SERVER_WG_IPV6=${SERVER_WG_IPV6}
+
+if [ "$useIPv6" = "true" ]; then
+  SERVER_WG_IPV6=${SERVER_WG_IPV6}
+else
+  SERVER_WG_IPV6=""
+fi
+
+
 SERVER_PORT=${SERVER_PORT}
 SERVER_PRIV_KEY=${SERVER_PRIV_KEY}
 SERVER_PUB_KEY=${SERVER_PUB_KEY}
@@ -618,40 +626,57 @@ CLIENT_DNS6_2=${CLIENT_DNS6_2}
 ALLOWED_IPS=${ALLOWED_IPS}" >/etc/wireguard/${SERVER_WG_NIC}_params
 
 # Add server interface
-echo "[Interface]
-Address = ${SERVER_WG_IPV4}/24,${SERVER_WG_IPV6}/64
-ListenPort = ${SERVER_PORT}
+echo "[Interface]" >"/etc/wireguard/${SERVER_WG_NIC}.conf"
+
+if [ "$useIPv6" = "true" ]; then
+  echo " Address = ${SERVER_WG_IPV4}/24,${SERVER_WG_IPV6}/128" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+else
+  echo " Address = ${SERVER_WG_IPV4}/24" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+fi
+
+echo "ListenPort = ${SERVER_PORT}
 PrivateKey = ${SERVER_PRIV_KEY}" >"/etc/wireguard/${SERVER_WG_NIC}.conf"
 
+
 if pgrep firewalld; then
-FIREWALLD_IPV4_ADDRESS=$(echo "${SERVER_WG_IPV4}" | cut -d"." -f1-3)".0"
-FIREWALLD_IPV6_ADDRESS=$(echo "${SERVER_WG_IPV6}" | sed 's/:[^:]*$/:0/')
-echo "PostUp = firewall-cmd --add-port ${SERVER_PORT}/udp && firewall-cmd --add-rich-rule='rule family=ipv4 source address=${FIREWALLD_IPV4_ADDRESS}/24 masquerade' && firewall-cmd --add-rich-rule='rule family=ipv6 source address=${FIREWALLD_IPV6_ADDRESS}/24 masquerade'
-PostDown = firewall-cmd --remove-port ${SERVER_PORT}/udp && firewall-cmd --remove-rich-rule='rule family=ipv4 source address=${FIREWALLD_IPV4_ADDRESS}/24 masquerade' && firewall-cmd --remove-rich-rule='rule family=ipv6 source address=${FIREWALLD_IPV6_ADDRESS}/24 masquerade'" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
-# "
+  FIREWALLD_IPV4_ADDRESS=$(echo "${SERVER_WG_IPV4}" | cut -d"." -f1-3)".0"
+  if [ "$useIPv6" = "true" ]; then
+    FIREWALLD_IPV6_ADDRESS=$(echo "${SERVER_WG_IPV6}" | sed 's/:[^:]*$/:0/')
+    echo "PostUp = firewall-cmd --add-port ${SERVER_PORT}/udp && firewall-cmd --add-rich-rule='rule family=ipv4 source address=${FIREWALLD_IPV4_ADDRESS}/24 masquerade' && firewall-cmd --add-rich-rule='rule family=ipv6 source address=${FIREWALLD_IPV6_ADDRESS}/128 masquerade'
+PostDown = firewall-cmd --remove-port ${SERVER_PORT}/udp && firewall-cmd --remove-rich-rule='rule family=ipv4 source address=${FIREWALLD_IPV4_ADDRESS}/24 masquerade' && firewall-cmd --remove-rich-rule='rule family=ipv6 source address=${FIREWALLD_IPV6_ADDRESS}/128 masquerade'" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+  else
+    echo "PostUp = firewall-cmd --add-port ${SERVER_PORT}/udp && firewall-cmd --add-rich-rule='rule family=ipv4 source address=${FIREWALLD_IPV4_ADDRESS}/24 masquerade'
+PostDown = firewall-cmd --remove-port ${SERVER_PORT}/udp && firewall-cmd --remove-rich-rule='rule family=ipv4 source address=${FIREWALLD_IPV4_ADDRESS}/24 masquerade'" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+  fi
 else
-echo "PostUp = iptables -I INPUT -p udp --dport ${SERVER_PORT} -j ACCEPT
+  echo "PostUp = iptables -I INPUT -p udp --dport ${SERVER_PORT} -j ACCEPT
 PostUp = iptables -I FORWARD -i ${SERVER_PUB_NIC} -o ${SERVER_WG_NIC} -j ACCEPT
 PostUp = iptables -I FORWARD -i ${SERVER_WG_NIC} -j ACCEPT
-PostUp = iptables -t nat -A POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE
-PostUp = ip6tables -I FORWARD -i ${SERVER_WG_NIC} -j ACCEPT
-PostUp = ip6tables -t nat -A POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE
-PostUp = /usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh
+PostUp = iptables -t nat -A POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+
+  if [ "$useIPv6" = "true" ]; then
+    echo "PostUp = ip6tables -I FORWARD -i ${SERVER_WG_NIC} -j ACCEPT
+PostUp = ip6tables -t nat -A POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+  fi
+
+  echo "PostUp = /usr/local/extDot/${SERVER_WG_NIC}_wgexpctrl.sh
 PostDown = iptables -D INPUT -p udp --dport ${SERVER_PORT} -j ACCEPT
 PostDown = iptables -D FORWARD -i ${SERVER_PUB_NIC} -o ${SERVER_WG_NIC} -j ACCEPT
 PostDown = iptables -D FORWARD -i ${SERVER_WG_NIC} -j ACCEPT
-PostDown = iptables -t nat -D POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE
-PostDown = ip6tables -D FORWARD -i ${SERVER_WG_NIC} -j ACCEPT
-PostDown = ip6tables -t nat -D POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+PostDown = iptables -t nat -D POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
 
-# "
+  if [ "$useIPv6" = "true" ]; then
+    echo "PostDown = ip6tables -D FORWARD -i ${SERVER_WG_NIC} -j ACCEPT
+PostDown = ip6tables -t nat -D POSTROUTING -o ${SERVER_PUB_NIC} -j MASQUERADE" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+  fi
 fi
 
 # Enable routing on the server
-echo "net.ipv4.ip_forward = 1
-net.ipv6.conf.all.forwarding = 1" >/etc/sysctl.d/wg.conf
+echo "net.ipv4.ip_forward = 1" >/etc/sysctl.d/wg.conf
 
-# "
+if [ "$useIPv6" = "true" ]; then
+  echo "net.ipv6.conf.all.forwarding = 1" >>/etc/sysctl.d/wg.conf
+fi
 
 sysctl --system
 
