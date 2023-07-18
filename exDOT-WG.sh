@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scriptVersion=1.2
+scriptVersion=1.21
 
 # Color Codes
 function colorCodes() {
