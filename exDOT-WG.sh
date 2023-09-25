@@ -43,7 +43,6 @@ echo "You need to run this script as root"
 exit 1
 fi
 
-
 # CREDIT : Angristn Script 
 if [ "$(systemd-detect-virt)" == "openvz" ]; then
 	echo "OpenVZ is not supported"
