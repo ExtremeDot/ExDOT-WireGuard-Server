@@ -1441,7 +1441,7 @@ B2main
 ;;
 
 98) # Uninstall WireGuard
-uninstallWg
+UninstallWireGuard
 ;;
 
 99) #update
