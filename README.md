@@ -19,7 +19,7 @@ CLI Based Advanced WireGuard Server
 ### Install
 
 ```bash
-curl -O https://raw.githubusercontent.com/ExtremeDot/ExDOT-WireGuard-Server/main/exDOT-WG.sh && chmod +x exDOT-WG.sh
+curl -O https://raw.githubusercontent.com/xMaximillianous/ExDOT-WireGuard-Server/main/exDOT-WG.sh && chmod +x exDOT-WG.sh
 
 mv exDOT-WG.sh /usr/local/bin/exDOT-WG && chmod +x /usr/local/bin/exDOT-WG
 
