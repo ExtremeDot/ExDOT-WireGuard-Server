@@ -43,19 +43,9 @@ echo "You need to run this script as root"
 exit 1
 fi
 
-
 # CREDIT : Angristn Script 
 if [ "$(systemd-detect-virt)" == "openvz" ]; then
 	echo "OpenVZ is not supported"
-	exit 1
-fi
-
-if [ "$(systemd-detect-virt)" == "lxc" ]; then
-	echo "LXC is not supported (yet)."
-	echo "WireGuard can technically run in an LXC container,"
-	echo "but the kernel module has to be installed on the host,"
-	echo "the container has to be run with some specific parameters"
-	echo "and only the tools need to be installed in the container."
 	exit 1
 fi
 
@@ -1441,7 +1431,7 @@ B2main
 ;;
 
 98) # Uninstall WireGuard
-uninstallWg
+UninstallWireGuard
 ;;
 
 99) #update
