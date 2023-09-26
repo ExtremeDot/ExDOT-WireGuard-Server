@@ -1055,8 +1055,8 @@ PresharedKey = ${CLIENT_PRE_SHARED_KEY}
 Endpoint = ${ENDPOINT}
 AllowedIPs = ${ALLOWED_IPS}" >>"${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
 
-if [ "$pka" -eq 0]; then
-	true
+if [ $pka -eq 0]; then
+	:
 else
 	echo "PersistentKeepalive = ${pka}" >> "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
 fi
