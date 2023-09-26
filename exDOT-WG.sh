@@ -43,19 +43,9 @@ echo "You need to run this script as root"
 exit 1
 fi
 
-
 # CREDIT : Angristn Script 
 if [ "$(systemd-detect-virt)" == "openvz" ]; then
 	echo "OpenVZ is not supported"
-	exit 1
-fi
-
-if [ "$(systemd-detect-virt)" == "lxc" ]; then
-	echo "LXC is not supported (yet)."
-	echo "WireGuard can technically run in an LXC container,"
-	echo "but the kernel module has to be installed on the host,"
-	echo "the container has to be run with some specific parameters"
-	echo "and only the tools need to be installed in the container."
 	exit 1
 fi
 
@@ -373,6 +363,27 @@ while true; do
     red "   - [ERROR] MTU size must be between ${MIN_MTU} and ${MAX_MTU}."
   else
     green "   - MTU size set to $mtu."
+    break
+  fi
+done
+}
+
+function keepalive() {
+MIN_PKA=0
+MAX_PKA=135
+DEFAULT_PKA=25
+echo
+yellow "   - Setup Persistent KeepAlive"
+while true; do
+
+  read -rp "   - Enter Persistent KeepAlive time in seconds [${MIN_PKA}~${MAX_PKA}]: " -e -i "${DEFAULT_PKA}" pka
+
+  if ! [[ "$pka" =~ ^[0-9]+$ ]]; then
+    red "   - [ERROR] PKA must be a positive integer."
+  elif ((pka < MIN_PKA || pka > MAX_PKA)); then
+    red "   - [ERROR] PKA must be between ${MIN_PKA} and ${MAX_PKA}."
+  else
+    green "   - Persistent KeepAlive has been set to $pka."
     break
   fi
 done
@@ -915,7 +926,7 @@ current_date=$(date +'%Y-%m-%d')
 # Prompt user to set expiration date with default value of current date
 yellow "   - Setup Expiration Date for clinet"
 
-read -e -i "y"  -p "   - Enable expiration date for [${CLIENT_NAME}] ? (y/n): " response
+read -e -i "n"  -p "   - Enable expiration date for [${CLIENT_NAME}] ? (y/n): " response
 
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
 yellow "     - Enter expiration date in (YYYY-MM-DD) format: "
@@ -944,6 +955,7 @@ BASEIP=""
 IPV4_EXISTS=""
 IPV6_EXISTS=""
 mtu=""
+pka=""
 
 readBASEConf
 
@@ -998,6 +1010,9 @@ fi
 # MTU Size
 mtuSet
 
+# Persistent KeepAlive
+keepalive
+
 # Generate key pair for the client
 CLIENT_PRIV_KEY=$(wg genkey)
 CLIENT_PUB_KEY=$(echo "${CLIENT_PRIV_KEY}" | wg pubkey)
@@ -1040,6 +1055,12 @@ PresharedKey = ${CLIENT_PRE_SHARED_KEY}
 Endpoint = ${ENDPOINT}
 AllowedIPs = ${ALLOWED_IPS}" >>"${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
 
+if [ $pka -gt 0 ]; then
+	echo "PersistentKeepalive = ${pka}" >> "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
+else
+	:
+fi
+
 # Add the client as a peer to the server
 echo -e "\n### Client ${CLIENT_NAME}
 [Peer]
@@ -1052,7 +1073,6 @@ if [ -z "$SERVER_WG_IPV6" ]; then
 else
 	echo "AllowedIPs = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
 fi
-
 
 wg syncconf "${SERVER_WG_NIC}" <(wg-quick strip "${SERVER_WG_NIC}")
 
@@ -1441,7 +1461,7 @@ B2main
 ;;
 
 98) # Uninstall WireGuard
-uninstallWg
+UninstallWireGuard
 ;;
 
 99) #update
