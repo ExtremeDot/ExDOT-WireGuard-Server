@@ -1055,6 +1055,12 @@ PresharedKey = ${CLIENT_PRE_SHARED_KEY}
 Endpoint = ${ENDPOINT}
 AllowedIPs = ${ALLOWED_IPS}" >>"${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
 
+if [ "$pka" -eq "0"]; then
+	:
+else
+	echo "PersistentKeepalive = ${pka}" >> "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
+fi
+
 # Add the client as a peer to the server
 echo -e "\n### Client ${CLIENT_NAME}
 [Peer]
@@ -1066,12 +1072,6 @@ if [ -z "$SERVER_WG_IPV6" ]; then
  	echo "AllowedIPs = ${CLIENT_WG_IPV4}/32" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
 else
 	echo "AllowedIPs = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
-fi
-
-if [ "$pka" -eq "0"]; then
-	:
-else
-	echo "PersistentKeepalive = ${pka}" >> "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
 fi
 
 wg syncconf "${SERVER_WG_NIC}" <(wg-quick strip "${SERVER_WG_NIC}")
