@@ -376,7 +376,7 @@ echo
 yellow "   - Setup Persistent KeepAlive"
 while true; do
 
-  read -rp "   - Enter Persistent KeepAlive time [${MIN_PKA}~${MAX_PKA}]: " -e -i "${DEFAULT_PKA}" pka
+  read -rp "   - Enter Persistent KeepAlive time in seconds [${MIN_PKA}~${MAX_PKA}]: " -e -i "${DEFAULT_PKA}" pka
 
   if ! [[ "$pka" =~ ^[0-9]+$ ]]; then
     red "   - [ERROR] PKA must be a positive integer."
@@ -926,7 +926,7 @@ current_date=$(date +'%Y-%m-%d')
 # Prompt user to set expiration date with default value of current date
 yellow "   - Setup Expiration Date for clinet"
 
-read -e -i "y"  -p "   - Enable expiration date for [${CLIENT_NAME}] ? (y/n): " response
+read -e -i "n"  -p "   - Enable expiration date for [${CLIENT_NAME}] ? (y/n): " response
 
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
 yellow "     - Enter expiration date in (YYYY-MM-DD) format: "
@@ -1055,7 +1055,7 @@ PresharedKey = ${CLIENT_PRE_SHARED_KEY}
 Endpoint = ${ENDPOINT}
 AllowedIPs = ${ALLOWED_IPS}" >>"${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
 
-if [ $pka -gt 0]; then
+if [ $pka -gt 0 ]; then
 	echo "PersistentKeepalive = ${pka}" >> "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
 else
 	:
