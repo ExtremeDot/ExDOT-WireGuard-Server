@@ -1070,11 +1070,7 @@ else
 	echo "AllowedIPs = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
 fi
 
-if [ "$pka" -eq "0"]; then
-	:
-else
-	echo "PersistentKeepalive = ${pka}" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
-fi
+echo "PersistentKeepalive = ${pka}" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
 
 wg syncconf "${SERVER_WG_NIC}" <(wg-quick strip "${SERVER_WG_NIC}")
 
