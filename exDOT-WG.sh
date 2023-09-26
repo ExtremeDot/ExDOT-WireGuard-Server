@@ -368,6 +368,27 @@ while true; do
 done
 }
 
+function keepalive() {
+MIN_PKA=0
+MAX_PKA=135
+DEFAULT_PKA=25
+echo
+yellow "   - Setup Persistent KeepAlive"
+while true; do
+
+  read -rp "   - Enter Persistent KeepAlive time [${MIN_PKA}~${MAX_PKA}]: " -e -i "${DEFAULT_PKA}" seconds
+
+  if ! [[ "$pka" =~ ^[0-9]+$ ]]; then
+    red "   - [ERROR] PKA must be a positive integer."
+  elif ((pka < MIN_PKA || pka > MAX_PKA)); then
+    red "   - [ERROR] PKA must be between ${MIN_PKA} and ${MAX_PKA}."
+  else
+    green "   - Persistent KeepAlive has been set to $pka."
+    break
+  fi
+done
+}
+
 function createNewWgNIC() {
 clear
 echo
@@ -934,6 +955,7 @@ BASEIP=""
 IPV4_EXISTS=""
 IPV6_EXISTS=""
 mtu=""
+pka=""
 
 readBASEConf
 
@@ -987,6 +1009,9 @@ fi
 
 # MTU Size
 mtuSet
+
+# Persistent KeepAlive
+keepalive
 
 # Generate key pair for the client
 CLIENT_PRIV_KEY=$(wg genkey)
@@ -1043,6 +1068,11 @@ else
 	echo "AllowedIPs = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
 fi
 
+if [ "$pka" -eq "0"]; then
+	:
+else
+	echo "PersistentKeepalive = ${pka}" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+fi
 
 wg syncconf "${SERVER_WG_NIC}" <(wg-quick strip "${SERVER_WG_NIC}")
 
