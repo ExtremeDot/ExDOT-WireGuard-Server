@@ -1013,6 +1013,8 @@ mtuSet
 # Persistent KeepAlive
 keepalive
 
+echo $pka
+
 # Generate key pair for the client
 CLIENT_PRIV_KEY=$(wg genkey)
 CLIENT_PUB_KEY=$(echo "${CLIENT_PRIV_KEY}" | wg pubkey)
