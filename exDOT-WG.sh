@@ -376,7 +376,7 @@ echo
 yellow "   - Setup Persistent KeepAlive"
 while true; do
 
-  read -rp "   - Enter Persistent KeepAlive time [${MIN_PKA}~${MAX_PKA}]: " -e -i "${DEFAULT_PKA}" seconds
+  read -rp "   - Enter Persistent KeepAlive time in seconds [${MIN_PKA}~${MAX_PKA}]: " -e -i "${DEFAULT_PKA}"
 
   if ! [[ "$pka" =~ ^[0-9]+$ ]]; then
     red "   - [ERROR] PKA must be a positive integer."
