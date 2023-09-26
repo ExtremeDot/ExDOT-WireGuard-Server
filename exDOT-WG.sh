@@ -378,7 +378,7 @@ while true; do
 
   read -rp "   - Enter Persistent KeepAlive time in seconds [${MIN_PKA}~${MAX_PKA}]: " -e -i "${DEFAULT_PKA}"
 
-  if ! [[ "$pka" =~ ^[0-9]+$ ]]; then
+  if ! [[ "$pka" -lt 0 ]]; then
     red "   - [ERROR] PKA must be a positive integer."
   elif ((pka < MIN_PKA || pka > MAX_PKA)); then
     red "   - [ERROR] PKA must be between ${MIN_PKA} and ${MAX_PKA}."
