@@ -1055,10 +1055,10 @@ PresharedKey = ${CLIENT_PRE_SHARED_KEY}
 Endpoint = ${ENDPOINT}
 AllowedIPs = ${ALLOWED_IPS}" >>"${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
 
-if [ $pka -eq 0]; then
-	:
-else
+if [ $pka -gt 0]; then
 	echo "PersistentKeepalive = ${pka}" >> "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
+else
+	:
 fi
 
 # Add the client as a peer to the server
