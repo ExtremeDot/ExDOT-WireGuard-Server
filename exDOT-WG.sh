@@ -1013,8 +1013,6 @@ mtuSet
 # Persistent KeepAlive
 keepalive
 
-echo $pka
-
 # Generate key pair for the client
 CLIENT_PRIV_KEY=$(wg genkey)
 CLIENT_PUB_KEY=$(echo "${CLIENT_PRIV_KEY}" | wg pubkey)
@@ -1070,7 +1068,11 @@ else
 	echo "AllowedIPs = ${CLIENT_WG_IPV4}/32,${CLIENT_WG_IPV6}/128" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
 fi
 
-echo "PersistentKeepalive = ${pka}" >>"/etc/wireguard/${SERVER_WG_NIC}.conf"
+if [ "$pka" -eq "0"]; then
+	:
+else
+	echo "PersistentKeepalive = ${pka}" >> "${HOME_DIR}/${SERVER_WG_NIC}-${CLIENT_NAME}.conf"
+fi
 
 wg syncconf "${SERVER_WG_NIC}" <(wg-quick strip "${SERVER_WG_NIC}")
 
